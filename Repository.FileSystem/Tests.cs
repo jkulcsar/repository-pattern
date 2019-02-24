@@ -3,24 +3,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Repository.Testing;
+
+// https://github.com/Microsoft/vstest/issues/1736
+// EF6 support upgrade: https://github.com/scho/Repository - just followed the discussions in the original repository:
+// https://github.com/matthewschrager/Repository
+// https://entityframework-plus.net/?z=ef-extended
+// For Azure storage, start here: https://docs.microsoft.com/en-us/azure/storage/
 
 namespace Repository.FileSystem
 {
     [TestFixture]
     internal class Tests
     {
+        private readonly string basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         //===============================================================
         [Test]
         public void Standard()
         {
-            var implicitKeyRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = "Tests/ImplicitKeyRepositories" });
-            var gzipRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = "Tests/ImplicitKeyRepositories", StreamGenerator = new GZipStreamGenerator(), FileExtension = ".txt.gz" });
-            var explicitKeyRepo = new ExplicitKeyFileSystemRepository<TestClass>("Test", new FileSystemOptions<TestClass> { FolderPath = "Tests/ExplicitKeyRepositories" });
-            var multipleFileRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = "Tests/ImplicitKeyRepositories", FileStorageType = FileStorageType.FilePerObject });
+            var implicitKeyRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = Path.Combine(basePath, "Tests/ImplicitKeyRepositories") });
+            var gzipRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = Path.Combine(basePath, "Tests/ImplicitKeyRepositories"), StreamGenerator = new GZipStreamGenerator(), FileExtension = ".txt.gz" });
+            var explicitKeyRepo = new ExplicitKeyFileSystemRepository<TestClass>("Test", new FileSystemOptions<TestClass> { FolderPath = Path.Combine(basePath, "Tests/ExplicitKeyRepositories") });
+            var multipleFileRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = Path.Combine(basePath, "Tests/ImplicitKeyRepositories"), FileStorageType = FileStorageType.FilePerObject });
             
             StandardTests.All(implicitKeyRepo, null, explicitKeyRepo);
             StandardTests.All(gzipRepo);
@@ -30,7 +38,7 @@ namespace Repository.FileSystem
         [Test]
         public void MultipleKeys()
         {
-            using (var repo = new FileSystemRepository<TestClass, String, String>("Test", x => Tuple.Create(x.ID, x.StringValue)))
+            using (var repo = new FileSystemRepository<TestClass, String, String>("Test", x => Tuple.Create(x.ID, x.StringValue), new FileSystemOptions<TestClass> { FolderPath = Path.Combine(basePath, "MultipleKeysTests") }))
             {
                 var obj = new TestClass("key", "value");
                 repo.Insert(obj);
@@ -77,11 +85,11 @@ namespace Repository.FileSystem
         [Test]
         public void Backup()
         {
-            var implicitKeyRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = "BackupTests/SingleFile" });
-            var multipleFileRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = "BackupTests/FilePerObject", FileStorageType = FileStorageType.FilePerObject });
+            var implicitKeyRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = Path.Combine(basePath, "BackupTests/SingleFile") });
+            var multipleFileRepo = new FileSystemRepository<TestClass>("Test", x => x.ID, new FileSystemOptions<TestClass> { FolderPath = Path.Combine(basePath, "BackupTests/FilePerObject"), FileStorageType = FileStorageType.FilePerObject });
 
-            var expectedSingleFilePath = "BackupTests/SingleFile/backup/" + DateTime.Today.ToString("yyyyMMdd");
-            var expectedFilePerObjectPath = "BackupTests/FilePerObject/Test/backup/" + DateTime.Today.ToString("yyyyMMdd");
+            var expectedSingleFilePath = Path.Combine(basePath, "BackupTests/SingleFile/backup/" + DateTime.Today.ToString("yyyyMMdd"));
+            var expectedFilePerObjectPath = Path.Combine(basePath, "BackupTests/FilePerObject/Test/backup/" + DateTime.Today.ToString("yyyyMMdd"));
 
             try
             {
