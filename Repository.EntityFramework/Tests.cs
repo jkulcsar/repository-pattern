@@ -39,6 +39,11 @@ namespace Repository.EntityFramework
         //===============================================================
         public DbSet<TestObjectWithConventionKey> ConventionKeys { get; set; }
         //===============================================================
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
     }
 
     [TestFixture]
