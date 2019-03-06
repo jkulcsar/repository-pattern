@@ -32,19 +32,20 @@
 //                and position.
 
 
-
 namespace Microsoft.Samples.EntityDataReader
 {
     using System;
     using System.Collections.Generic;
     using System.Data;
     using System.Data.Common;
-    using System.Data.Metadata.Edm;
-    using System.Data.Objects;
-    using System.Data.Objects.DataClasses;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using System.Data.Entity.Core.Objects;
+    using System.Data.Entity.Core.Objects.DataClasses;
+    using System.Data.Entity.Core.Metadata.Edm;
+    using System.Data.Entity.Core;
+
 
     /// <summary>
     /// The EntityDataReader wraps a collection of CLR objects in a DbDataReader.  
