@@ -33,3 +33,4 @@ Repository.UnitTests
 Repository.Tests
 Repository.Sandbox
 /packages
+/.vs
